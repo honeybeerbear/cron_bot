@@ -21,9 +21,7 @@ import { LowDBWrapper } from "../db/db.js";
 
   const getList = await accountdb.readdata(getAccount("honeyerbear"));
   console.log(getList);
-})();
 
-async () => {
   const jobdb = new LowDBWrapper("job.json");
   await jobdb.initialize();
   const job = {
@@ -36,5 +34,4 @@ async () => {
   };
 
   await jobdb.writedata(job);
-  const jobList = await 
-};
+})();
