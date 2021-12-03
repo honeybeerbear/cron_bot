@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.24.0",
     "lowdb": "^3.0.0",
-    "node-cron": "^3.0.0"
+    "node-cron": "^3.0.0",
+    "steem": "^0.7.11"
   }
 }

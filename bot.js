@@ -1,13 +1,49 @@
 import cron from "node-cron";
-import transfer from "./tasks/transfer.js";
+import steemapi from "./lib/steemapi.js";
+import { LowDBWrapper } from "./db/db.js";
 
-const cronJob = (exp, func) => {
-  cron.schedule(exp, func);
-};
+(async () => {
+  const cronJob = (exp, func) => {
+    try {
+      cron.schedule(exp, func);
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
-(() => {
+  const getAccount = (accnt) => {
+    return (ele) => {
+      return ele.account === accnt ? 1 : 0;
+    };
+  };
+
   // get db data list
-  // cron 객체 생성
-  // if transfer
-  cronJob("*/1 * * * *", () => transfer("a", "b", 10));
+  const jobdb = new LowDBWrapper("job.json");
+  const accountdb = new LowDBWrapper("account.json");
+  await jobdb.initialize();
+  await accountdb.initialize();
+
+  const jobList = await jobdb.readdata();
+  for (let i = 0; i < jobList.length; i++) {
+    const element = jobList[i];
+    if (element.function === "transfer") {
+      const rtnData = await accountdb.readdata(getAccount(element.from));
+
+      // add cron job
+      cronJob(element.exp, () =>
+        steemapi.transferToken(
+          rtnData.active,
+          element.from,
+          element.symbol,
+          element.to,
+          element.amount,
+          "",
+          (result, err) => {
+            if (!err) console.log(result);
+            else console.log(err);
+          }
+        )
+      );
+    }
+  }
 })();
