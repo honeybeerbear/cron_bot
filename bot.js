@@ -26,24 +26,99 @@ import { LowDBWrapper } from "./db/db.js";
   const jobList = await jobdb.readdata();
   for (let i = 0; i < jobList.length; i++) {
     const element = jobList[i];
-    if (element.function === "transfer") {
-      const rtnData = await accountdb.readdata(getAccount(element.from));
 
-      // add cron job
-      cronJob(element.exp, () =>
-        steemapi.transferToken(
-          rtnData.active,
-          element.from,
-          element.symbol,
-          element.to,
-          element.amount,
-          "",
-          (result, err) => {
-            if (!err) console.log(result);
-            else console.log(err);
-          }
-        )
-      );
+    switch (element.function) {
+      case "claimReward":
+        const claimAccount = await accountdb.readdata(
+          getAccount(element.account)
+        );
+        cronJob(element.exp, () => {
+          console.log("claimReward : " + element.account);
+
+          const accountInfo = await steemapi.getAccount(element.account);
+          const steembal = accountInfo[0].reward_steem_balance;
+          const sbdbal = accountInfo[0].reward_sbd_balance;
+          const vestBal = accountInfo[0].reward_vesting_balance;
+          steemapi.claimReward(
+            claimAccount.post,
+            element.account,
+            steembal,
+            sbdbal,
+            vestBal,
+            (result, err) => {
+              if (!err) console.log(result);
+              else console.log(err);
+            }
+          );
+        });
+        break;
+      case "transferToken": // transfer engine token
+        // get wif
+        const transferTokenAccount = await accountdb.readdata(
+          getAccount(element.from)
+        );
+        // add cron job
+        cronJob(element.exp, () => {
+          console.log(
+            "transferToken  from " +
+              element.from +
+              ", to : " +
+              element.to +
+              ", amount : " +
+              amount
+          );
+          steemapi.transferEngineToken(
+            transferTokenAccount.active,
+            element.from,
+            element.symbol,
+            element.to,
+            element.amount,
+            "",
+            (result, err) => {
+              if (!err) console.log(result);
+              else console.log(err);
+            }
+          );
+        });
+        break;
+      case "transfer":
+        // get wif
+        const transferAccount = await accountdb.readdata(
+          getAccount(element.from)
+        );
+
+        let amount = 0;
+        if (element.amount == 0) {
+          // get account info
+          const accountInfo = await steemapi.getAccount(element.from);
+          amount = accountInfo[0].balance;
+        } else {
+          amount = parseFloat(element.amount).toFixed(3) + " " + element.symbol;
+        }
+
+        // add cron job
+        cronJob(element.exp, () => {
+          console.log(
+            "Transfer from " +
+              element.from +
+              ", to : " +
+              element.to +
+              ", amount : " +
+              amount
+          );
+          steemapi.transferToken(
+            transferAccount.active,
+            element.from,
+            element.to,
+            amount,
+            element.memo ? element.memo : "",
+            (result, err) => {
+              if (!err) console.log(result);
+              else console.log(err);
+            }
+          );
+        });
+        break;
     }
   }
 })();
