@@ -35,21 +35,28 @@ import { LowDBWrapper } from "./db/db.js";
         cronJob(element.exp, () => {
           console.log("claimReward : " + element.account);
 
-          const accountInfo = await steemapi.getAccount(element.account);
-          const steembal = accountInfo[0].reward_steem_balance;
-          const sbdbal = accountInfo[0].reward_sbd_balance;
-          const vestBal = accountInfo[0].reward_vesting_balance;
-          steemapi.claimReward(
-            claimAccount.post,
-            element.account,
-            steembal,
-            sbdbal,
-            vestBal,
-            (result, err) => {
-              if (!err) console.log(result);
-              else console.log(err);
-            }
-          );
+          steemapi
+            .getAccount(element.account)
+            .then((res) => {
+              const steembal = res[0].reward_steem_balance;
+              const sbdbal = res[0].reward_sbd_balance;
+              const vestBal = res[0].reward_vesting_balance;
+
+              steemapi.claimReward(
+                claimAccount.post,
+                element.account,
+                steembal,
+                sbdbal,
+                vestBal,
+                (result, err) => {
+                  if (!err) console.log(result);
+                  else console.log(err);
+                }
+              );
+            })
+            .catch((err) => {
+              console.error(err);
+            });
         });
         break;
       case "transferToken": // transfer engine token
