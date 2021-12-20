@@ -98,7 +98,11 @@ import { LowDBWrapper } from "./db/db.js";
         if (element.amount == 0) {
           // get account info
           const accountInfo = await steemapi.getAccount(element.from);
-          amount = accountInfo[0].balance;
+
+          amount =
+            element.symbol === "STEEM"
+              ? accountInfo[0].balance
+              : accountInfo[0].sbd_balance;
         } else {
           amount = parseFloat(element.amount).toFixed(3) + " " + element.symbol;
         }
