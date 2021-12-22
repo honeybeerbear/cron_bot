@@ -72,7 +72,7 @@ import { LowDBWrapper } from "./db/db.js";
               ", to : " +
               element.to +
               ", amount : " +
-              amount
+              element.amount
           );
           steemapi.transferEngineToken(
             transferTokenAccount.active,
@@ -94,29 +94,31 @@ import { LowDBWrapper } from "./db/db.js";
           getAccount(element.from)
         );
 
-        let amount = 0;
-        if (element.amount == 0) {
-          // get account info
-          const accountInfo = await steemapi.getAccount(element.from);
-
-          amount =
-            element.symbol === "STEEM"
-              ? accountInfo[0].balance
-              : accountInfo[0].sbd_balance;
-        } else {
-          amount = parseFloat(element.amount).toFixed(3) + " " + element.symbol;
-        }
-
         // add cron job
-        cronJob(element.exp, () => {
+        cronJob(element.exp, async () => {
+          let amount = 0;
+          if (element.amount == 0) {
+            // get account info
+            const accountInfo = await steemapi.getAccount(element.from);
+
+            amount =
+              element.symbol === "STEEM"
+                ? accountInfo[0].balance
+                : accountInfo[0].sbd_balance;
+          } else {
+            amount =
+              parseFloat(element.amount).toFixed(3) + " " + element.symbol;
+          }
+
           console.log(
             "Transfer from " +
               element.from +
               ", to : " +
               element.to +
               ", amount : " +
-              amount
+              element.amount
           );
+
           steemapi.transferToken(
             transferAccount.active,
             element.from,
