@@ -110,27 +110,25 @@ import { LowDBWrapper } from "./db/db.js";
               parseFloat(element.amount).toFixed(3) + " " + element.symbol;
           }
 
-          if (element.amount > 0) {
-            console.log(
-              "Transfer from " +
-                element.from +
-                ", to : " +
-                element.to +
-                ", amount : " +
-                element.amount
-            );
-            steemapi.transferToken(
-              transferAccount.active,
-              element.from,
-              element.to,
-              amount,
-              element.memo ? element.memo : "",
-              (result, err) => {
-                if (!err) console.log(result);
-                else console.log(err);
-              }
-            );
-          }
+          console.log(
+            "Transfer from " +
+              element.from +
+              ", to : " +
+              element.to +
+              ", amount : " +
+              element.amount
+          );
+          steemapi.transferToken(
+            transferAccount.active,
+            element.from,
+            element.to,
+            amount,
+            element.memo ? element.memo : "",
+            (result, err) => {
+              if (!err) console.log(result);
+              else console.log(err);
+            }
+          );
         });
         break;
     }
