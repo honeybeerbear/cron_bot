@@ -79,7 +79,7 @@ import { LowDBWrapper } from "./db/db.js";
             element.from,
             element.symbol,
             element.to,
-            element.amount,
+            element.amount + "",
             "",
             (result, err) => {
               if (!err) console.log(result);
